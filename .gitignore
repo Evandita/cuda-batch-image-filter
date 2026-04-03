@@ -1,0 +1,5 @@
+*.exe
+*.o
+output/
+sample_images/
+processing_log*.csv
