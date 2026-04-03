@@ -161,9 +161,21 @@ double ProcessImage(const std::string& input_path,
                            cudaMemcpyHostToDevice));
 
   // Define ROI and filter parameters.
-  NppiSize roi = {width, height};
+  // The ROI excludes the border so the filter doesn't read out of bounds.
+  int border_x = filter_w / 2;
+  int border_y = filter_h / 2;
+  NppiSize roi = {width - 2 * border_x, height - 2 * border_y};
   NppiSize mask_size = {filter_w, filter_h};
-  NppiPoint anchor = {filter_w / 2, filter_h / 2};
+  NppiPoint anchor = {border_x, border_y};
+
+  // Offset source pointer to start of valid ROI.
+  Npp8u* d_src_roi = d_src + border_y * d_step_src + border_x * channels;
+  Npp8u* d_dst_roi = d_dst + border_y * d_step_dst + border_x * channels;
+
+  // Copy source to destination first so border pixels are preserved.
+  CHECK_CUDA(cudaMemcpy2D(d_dst, d_step_dst, d_src, d_step_src,
+                           width * channels * sizeof(Npp8u), height,
+                           cudaMemcpyDeviceToDevice));
 
   // Start GPU timing.
   cudaEvent_t start, stop;
@@ -171,9 +183,9 @@ double ProcessImage(const std::string& input_path,
   CHECK_CUDA(cudaEventCreate(&stop));
   CHECK_CUDA(cudaEventRecord(start));
 
-  // Apply NPP box filter.
+  // Apply NPP box filter on the valid ROI.
   CHECK_NPP(nppiFilterBox_8u_C3R(
-      d_src, d_step_src, d_dst, d_step_dst, roi, mask_size, anchor));
+      d_src_roi, d_step_src, d_dst_roi, d_step_dst, roi, mask_size, anchor));
 
   // Stop GPU timing.
   CHECK_CUDA(cudaEventRecord(stop));
