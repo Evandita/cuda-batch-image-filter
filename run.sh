@@ -2,6 +2,10 @@
 # Build, generate test data, and run the batch image filter.
 set -e
 
+echo "=== Step 0: Install Python dependencies ==="
+pip3 install numpy opencv-python 2>/dev/null || pip3 install numpy 2>/dev/null || true
+
+echo ""
 echo "=== Step 1: Generate test images ==="
 bash generate_test_images.sh
 
