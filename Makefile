@@ -3,7 +3,7 @@ CXX = nvcc
 CXXFLAGS = --std c++17 -Wno-deprecated-gpu-targets
 CXXFLAGS += $(shell pkg-config --cflags opencv4 2>/dev/null || pkg-config --cflags opencv 2>/dev/null)
 LDFLAGS = $(shell pkg-config --libs opencv4 2>/dev/null || pkg-config --libs opencv 2>/dev/null)
-LDFLAGS += -lnppif -lnppc -lnppig -lnppist -lnppi -lnppisu -lcuda
+LDFLAGS += -lnppif -lnppc -lnppig -lnppist -lnppial -lnppicc -lnppidei -lnppim -lnppisu -lnppitc -lcuda
 
 TARGET = batch_image_filter.exe
 SRC = batch_image_filter.cu
